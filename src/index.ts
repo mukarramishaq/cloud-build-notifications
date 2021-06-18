@@ -5,9 +5,7 @@
  */
 import app from "./app";
 import http from "http";
-import debugWrapper from "debug";
-
-const debug = debugWrapper('cloud-build-chat-notifications:server');
+import {debug} from "./utils";
 /**
  * Get port from environment and store in Express.
  */
