@@ -2,9 +2,14 @@ import { Request } from "express";
 import { Client } from "../Client";
 import { BuildResourceType, MessageType, Status, StatusIcon } from "./types";
 import fetch from "node-fetch";
+import {
+    GOOGLE_CHAT_ROOM_WEBHOOK,
+    PROJECT_LOGO_URL,
+    PROJECT_NAME,
+    INSTANCE_NAME
+} from "../../config/env";
 class GoogleChatRoomClient extends Client<MessageType> {
 
-    protected message: MessageType;
     protected repoName: string;
     protected branchName: string;
     protected logUrl: string;
@@ -35,7 +40,7 @@ class GoogleChatRoomClient extends Client<MessageType> {
     }
 
     protected processMessage() {
-        this.buildResource = JSON.parse(atob(this.message.message.data));
+        this.buildResource = JSON.parse(Buffer.from(this.message.message.data, 'base64').toString());
         this.repoName = this.buildResource.substitutions.REPO_NAME;
         this.branchName = this.buildResource.substitutions.BRANCH_NAME;
         this.status = this.buildResource.status;
@@ -43,27 +48,27 @@ class GoogleChatRoomClient extends Client<MessageType> {
     }
 
     protected getProjectName() {
-        return process.env.PROJECT_NAME || this.repoName;
+        return PROJECT_NAME || this.repoName;
     }
 
     protected getInstanceName() {
-        return process.env.INSNTANCE_NAME || this.branchName;
+        return INSTANCE_NAME || this.branchName;
     }
 
-    protected getIcon() {
+    protected getIconUrl() {
         return StatusIcon[this.status];
     }
     protected getProjectLogUrl() {
-        return process.env.PROJECT_LOGO_URL;
+        return PROJECT_LOGO_URL;
     }
 
     protected async sendMessage() {
         const body = this.createMessageBody();
-        await fetch(process.env.GOOGLE_CHAT_WEBHOOK, {
+        await fetch(GOOGLE_CHAT_ROOM_WEBHOOK, {
             method: 'post',
             body: JSON.stringify(body),
             headers: { 'Content-Type': 'application/json' },
-        }).catch(e => console.error(`Error while send message to Google Chat: `, e));
+        }).then(res => res.json()).then(data => console.log("MKDEBUG: ", data)).catch(e => console.error(`Error while send message to Google Chat: `, e));
     }
 
     protected createMessageBody() {
@@ -82,7 +87,7 @@ class GoogleChatRoomClient extends Client<MessageType> {
                                     keyValue: {
                                         topLabel: "Status",
                                         content: this.status,
-                                        icon: this.getIcon(),
+                                        iconUrl: this.getIconUrl(),
                                         button: {
                                             textButton: {
                                                 text: "Open Logs",
