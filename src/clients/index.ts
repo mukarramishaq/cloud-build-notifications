@@ -1,5 +1,4 @@
 import { NextFunction, Request, Response } from "express";
-import { Client } from "./Client";
 import GoogleChatRoomClient from "./GoogleChatRoom/GoogleChatRoomClient";
 
 /**

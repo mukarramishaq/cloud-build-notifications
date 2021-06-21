@@ -1,6 +1,6 @@
 import { Request } from "express";
 
-export class Client <IncomingMessageType> {
+export class Client<IncomingMessageType> {
 
     protected message: IncomingMessageType;
 

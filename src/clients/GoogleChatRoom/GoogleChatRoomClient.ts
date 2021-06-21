@@ -48,6 +48,7 @@ class GoogleChatRoomClient extends Client<MessageType> {
     }
 
     protected processMessage() {
+        const currentDate = new Date();
         this.buildResource = JSON.parse(Buffer.from(this.message.message.data, 'base64').toString());
         this.repoName = this.buildResource.substitutions.REPO_NAME;
         this.branchName = this.buildResource.substitutions.BRANCH_NAME;
@@ -57,7 +58,7 @@ class GoogleChatRoomClient extends Client<MessageType> {
         this.trigger = this.buildResource.substitutions.TRIGGER_NAME;
         this.startAt = new Date(this.buildResource.startTime);
         this.endAt = this.buildResource.finishTime && new Date(this.buildResource.finishTime);
-        this.timeSpan = formatDistance(this.endAt || new Date(), this.startAt, { includeSeconds: true });
+        this.timeSpan = formatDistance(this.endAt || currentDate, this.startAt || currentDate, { includeSeconds: true });
         this.status = this.buildResource.status;
         this.logUrl = this.buildResource.logUrl;
     }
