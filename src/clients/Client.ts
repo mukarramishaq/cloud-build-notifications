@@ -11,6 +11,12 @@ export class Client<IncomingMessageType> {
      * is for this client it must return true
      * otherwise false.
      *
+     * There is already a global validator
+     * in place to check the message is from
+     * cloud build or not, so if you dont need
+     * further validations then dont override
+     * it or return true
+     *
      * @param {Request} req
      * @return {Boolean}
      */

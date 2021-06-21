@@ -1,6 +1,6 @@
 import { Request } from "express";
 import { Client } from "../Client";
-import { BuildResourceType, MessageType, Status, StatusIcon } from "./types";
+import { BuildResourceType, MessageType, Status, StatusIcon } from "../types";
 import fetch from "node-fetch";
 import {
     GOOGLE_CHAT_ROOM_WEBHOOK,
@@ -24,18 +24,6 @@ class GoogleChatRoomClient extends Client<MessageType> {
     protected timeSpan: string;
     protected buildResource: BuildResourceType
 
-
-    /**
-     * @inheritdoc
-     * @param {Request} req
-     */
-    static validate(req: Request): boolean {
-        const body = req.body;
-        if (!body.message || !body.message.data) {
-            return false;
-        }
-        return true;
-    }
 
     /**
      * @inheritdoc
@@ -84,7 +72,7 @@ class GoogleChatRoomClient extends Client<MessageType> {
             method: 'post',
             body: JSON.stringify(body),
             headers: { 'Content-Type': 'application/json' },
-        }).then(res => res.json()).then(data => console.log("MKDEBUG: ", data)).catch(e => console.error(`Error while send message to Google Chat: `, e));
+        }).then(res => res.json()).catch(e => console.error(`Error while send message to Google Chat: `, e));
     }
 
     protected createMessageBody() {
