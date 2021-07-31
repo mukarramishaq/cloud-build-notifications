@@ -62,9 +62,6 @@ class GoogleChatRoomClient extends Client<MessageType> {
     protected getIconUrl() {
         return StatusIcon[this.status];
     }
-    protected getProjectLogUrl() {
-        return PROJECT_LOGO_URL;
-    }
 
     protected async sendMessage() {
         const body = this.createMessageBody();
@@ -81,8 +78,7 @@ class GoogleChatRoomClient extends Client<MessageType> {
                 {
                     header: {
                         title: this.getTitle(),
-                        subtitle: this.getSubtitle(),
-                        imageUrl: this.getProjectLogUrl()
+                        subtitle: this.getSubtitle()
                     },
                     sections: [
                         {
