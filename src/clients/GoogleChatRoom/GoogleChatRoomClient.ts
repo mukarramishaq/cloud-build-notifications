@@ -1,54 +1,22 @@
-import { Request } from "express";
 import { Client } from "../Client";
-import { BuildResourceType, MessageType, Status, StatusIcon } from "../types";
+import { StatusIcon } from "../types";
 import fetch from "node-fetch";
 import {
     GOOGLE_CHAT_ROOM_WEBHOOK,
-    PROJECT_LOGO_URL,
     PROJECT_NAME,
-    MESSAGE_SUBTITLE
+    MESSAGE_SUBTITLE,
 } from "../../config/env";
-import formatDistance from "date-fns/formatDistance";
-class GoogleChatRoomClient extends Client<MessageType> {
 
-    protected repoName: string;
-    protected branchName: string;
-    protected shortSHA: string;
-    protected commitSHA: string;
-    protected revision: string;
-    protected trigger: string;
-    protected logUrl: string;
-    protected status: Status;
-    protected startAt: Date;
-    protected endAt: Date;
-    protected timeSpan: string;
-    protected buildResource: BuildResourceType
-
+export class GoogleChatRoomClient extends Client {
+    public isActive() {
+        return !!GOOGLE_CHAT_ROOM_WEBHOOK;
+    }
 
     /**
      * @inheritdoc
-     * @param {Request} req
      */
-    async handle(req: Request) {
-        this.message = req.body;
-        this.processMessage();
-        this.sendMessage();
-    }
-
-    protected processMessage() {
-        const currentDate = new Date();
-        this.buildResource = JSON.parse(Buffer.from(this.message.message.data, 'base64').toString());
-        this.repoName = this.buildResource.substitutions.REPO_NAME;
-        this.branchName = this.buildResource.substitutions.BRANCH_NAME;
-        this.shortSHA = this.buildResource.substitutions.SHORT_SHA;
-        this.commitSHA = this.buildResource.substitutions.COMMIT_SHA;
-        this.revision = this.buildResource.substitutions.REVISION_ID;
-        this.trigger = this.buildResource.substitutions.TRIGGER_NAME;
-        this.startAt = new Date(this.buildResource.startTime);
-        this.endAt = this.buildResource.finishTime && new Date(this.buildResource.finishTime);
-        this.timeSpan = formatDistance(this.endAt || currentDate, this.startAt || currentDate, { includeSeconds: true });
-        this.status = this.buildResource.status;
-        this.logUrl = this.buildResource.logUrl;
+    protected async send() {
+        return await this.sendMessage();
     }
 
     protected getTitle() {
@@ -66,10 +34,14 @@ class GoogleChatRoomClient extends Client<MessageType> {
     protected async sendMessage() {
         const body = this.createMessageBody();
         await fetch(GOOGLE_CHAT_ROOM_WEBHOOK, {
-            method: 'post',
+            method: "post",
             body: JSON.stringify(body),
-            headers: { 'Content-Type': 'application/json' },
-        }).then(res => res.json()).catch(e => console.error(`Error while send message to Google Chat: `, e));
+            headers: { "Content-Type": "application/json" },
+        })
+            .then((res) => res.json())
+            .catch((e) =>
+                console.error(`Error while send message to Google Chat: `, e)
+            );
     }
 
     protected createMessageBody() {
@@ -78,7 +50,7 @@ class GoogleChatRoomClient extends Client<MessageType> {
                 {
                     header: {
                         title: this.getTitle(),
-                        subtitle: this.getSubtitle()
+                        subtitle: this.getSubtitle(),
                     },
                     sections: [
                         {
@@ -93,14 +65,14 @@ class GoogleChatRoomClient extends Client<MessageType> {
                                                 text: "Open Logs",
                                                 onClick: {
                                                     openLink: {
-                                                        url: this.logUrl
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            ]
+                                                        url: this.logUrl,
+                                                    },
+                                                },
+                                            },
+                                        },
+                                    },
+                                },
+                            ],
                         },
                         {
                             widgets: [
@@ -108,65 +80,65 @@ class GoogleChatRoomClient extends Client<MessageType> {
                                     keyValue: {
                                         topLabel: "Repository",
                                         content: this.repoName,
-                                    }
+                                    },
                                 },
                                 {
                                     keyValue: {
                                         topLabel: "Branch",
                                         content: this.branchName,
-                                    }
+                                    },
                                 },
                                 {
                                     keyValue: {
                                         topLabel: "Commit SHA",
-                                        content: this.shortSHA
-                                    }
+                                        content: this.shortSHA,
+                                    },
                                 },
                                 {
                                     keyValue: {
                                         topLabel: "Revision ID",
-                                        content: this.revision
-                                    }
+                                        content: this.revision,
+                                    },
                                 },
                                 {
                                     keyValue: {
                                         topLabel: "Trigger Name",
-                                        content: this.trigger
-                                    }
+                                        content: this.trigger,
+                                    },
                                 },
                                 {
                                     keyValue: {
                                         topLabel: "Start Time",
-                                        content: this.startAt.toUTCString()
-                                    }
+                                        content: this.startAt.toUTCString(),
+                                    },
                                 },
                                 {
                                     keyValue: {
                                         topLabel: "Finish Time",
-                                        content: (this.endAt && this.endAt.toUTCString()) || "Unknown"
-                                    }
+                                        content:
+                                            (this.endAt &&
+                                                this.endAt.toUTCString()) ||
+                                            "Unknown",
+                                    },
                                 },
                                 {
                                     keyValue: {
                                         topLabel: "Elapsed Time",
-                                        content: this.timeSpan
-                                    }
+                                        content: this.timeSpan,
+                                    },
                                 },
                                 {
                                     textParagraph: {
-                                        text: "<font color='#B3B3B3'>made with sheer <font color=\"#ff0000\"><b>&hearts;<b></font> <font color='#B3B3B3'>by <a href='https://github.com/mukarramishaq'>MKDEBUG</a></font>"
-                                    }
-                                }
+                                        text:
+                                            "<font color='#B3B3B3'>made with sheer <font color=\"#ff0000\"><b>&hearts;<b></font> <font color='#B3B3B3'>by <a href='https://github.com/mukarramishaq'>MKDEBUG</a></font>",
+                                    },
+                                },
                             ],
-                            collapsable: true
-                        }
-                    ]
-                }
-            ]
-        }
+                            collapsable: true,
+                        },
+                    ],
+                },
+            ],
+        };
     }
-
 }
-
-
-export default GoogleChatRoomClient;
