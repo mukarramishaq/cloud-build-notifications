@@ -1,5 +1,5 @@
 import { Client } from "../Client";
-import { StatusIcon } from "../types";
+import { FieldNames } from "../../utils/constants";
 import fetch from "node-fetch";
 import {
     GOOGLE_CHAT_ROOM_WEBHOOK,
@@ -20,15 +20,13 @@ export class GoogleChatRoomClient extends Client {
     }
 
     protected getTitle() {
-        return `${this.repoName}  >>  ${this.branchName}`;
+        return `${this.fieldsData[FieldNames.REPO_NAME].value}  >>  ${
+            this.fieldsData[FieldNames.BRANCH_NAME].value
+        }`;
     }
 
     protected getSubtitle() {
         return MESSAGE_SUBTITLE || PROJECT_NAME;
-    }
-
-    protected getIconUrl() {
-        return StatusIcon[this.status];
     }
 
     protected async sendMessage() {
@@ -58,14 +56,17 @@ export class GoogleChatRoomClient extends Client {
                                 {
                                     keyValue: {
                                         topLabel: "Status",
-                                        content: this.status,
-                                        iconUrl: this.getIconUrl(),
+                                        content: this.fieldsData[
+                                            FieldNames.STATUS
+                                        ].value,
                                         button: {
                                             textButton: {
                                                 text: "Open Logs",
                                                 onClick: {
                                                     openLink: {
-                                                        url: this.logUrl,
+                                                        url: this.fieldsData[
+                                                            FieldNames.LOG_URL
+                                                        ].value,
                                                     },
                                                 },
                                             },
@@ -76,57 +77,14 @@ export class GoogleChatRoomClient extends Client {
                         },
                         {
                             widgets: [
-                                {
-                                    keyValue: {
-                                        topLabel: "Repository",
-                                        content: this.repoName,
-                                    },
-                                },
-                                {
-                                    keyValue: {
-                                        topLabel: "Branch",
-                                        content: this.branchName,
-                                    },
-                                },
-                                {
-                                    keyValue: {
-                                        topLabel: "Commit SHA",
-                                        content: this.shortSHA,
-                                    },
-                                },
-                                {
-                                    keyValue: {
-                                        topLabel: "Revision ID",
-                                        content: this.revision,
-                                    },
-                                },
-                                {
-                                    keyValue: {
-                                        topLabel: "Trigger Name",
-                                        content: this.trigger,
-                                    },
-                                },
-                                {
-                                    keyValue: {
-                                        topLabel: "Start Time",
-                                        content: this.startAt.toUTCString(),
-                                    },
-                                },
-                                {
-                                    keyValue: {
-                                        topLabel: "Finish Time",
-                                        content:
-                                            (this.endAt &&
-                                                this.endAt.toUTCString()) ||
-                                            "Unknown",
-                                    },
-                                },
-                                {
-                                    keyValue: {
-                                        topLabel: "Elapsed Time",
-                                        content: this.timeSpan,
-                                    },
-                                },
+                                ...this.fieldsValue.map((field) => {
+                                    return {
+                                        keyValue: {
+                                            topLabel: field.displayName,
+                                            content: field.value,
+                                        },
+                                    };
+                                }),
                                 {
                                     textParagraph: {
                                         text:

@@ -1,22 +1,23 @@
 import { Request } from "express";
-import { BuildResourceType, MessageType, Status } from "./types";
+import { BuildResourceType, MessageType } from "../utils/types";
 import formatDistance from "date-fns/formatDistance";
+
+export type FieldValueType = {
+    name: string;
+    displayName: string;
+    value: string;
+};
+
+export type FieldsDataType = {
+    [fieldName: string]: FieldValueType;
+};
 
 export class Client {
     protected message: MessageType;
 
-    protected repoName: string;
-    protected branchName: string;
-    protected shortSHA: string;
-    protected commitSHA: string;
-    protected revision: string;
-    protected trigger: string;
-    protected logUrl: string;
-    protected status: Status;
-    protected startAt: Date;
-    protected endAt: Date;
-    protected timeSpan: string;
     protected buildResource: BuildResourceType;
+    protected fieldsData: FieldsDataType;
+    protected fieldsValue: FieldValueType[];
 
     /**
      * this will handle the incoming message on successful
@@ -25,32 +26,163 @@ export class Client {
      */
     async handle(req: Request) {
         this.message = req.body;
-        this.processMessage();
-        return await this.send();
-    }
-
-    protected processMessage() {
-        const currentDate = new Date();
         this.buildResource = JSON.parse(
             Buffer.from(this.message.message.data, "base64").toString()
         );
-        this.repoName = this.buildResource.substitutions.REPO_NAME;
-        this.branchName = this.buildResource.substitutions.BRANCH_NAME;
-        this.shortSHA = this.buildResource.substitutions.SHORT_SHA;
-        this.commitSHA = this.buildResource.substitutions.COMMIT_SHA;
-        this.revision = this.buildResource.substitutions.REVISION_ID;
-        this.trigger = this.buildResource.substitutions.TRIGGER_NAME;
-        this.startAt = new Date(this.buildResource.startTime);
-        this.endAt =
-            this.buildResource.finishTime &&
-            new Date(this.buildResource.finishTime);
-        this.timeSpan = formatDistance(
-            this.endAt || currentDate,
-            this.startAt || currentDate,
-            { includeSeconds: true }
+        this.fieldsValue = await this.processMessage(this.buildResource);
+        this.fieldsData = this.fieldsValue.reduce((output, field) => {
+            output[field.name] = field;
+            return output;
+        }, {} as FieldsDataType);
+        return await this.send();
+    }
+
+    protected getFieldsAndOps = (): {
+        name: string;
+        displayName: string;
+        ops: ((param: any) => Promise<any>)[];
+    }[] => {
+        return [
+            {
+                name: "REPO_NAME",
+                displayName: "Repository Name",
+                ops: [
+                    async (previousOutput: BuildResourceType) => {
+                        return previousOutput.substitutions.REPO_NAME;
+                    },
+                ],
+            },
+            {
+                name: "BRANCH_NAME",
+                displayName: "Branch Name",
+                ops: [
+                    async (previousOutput: BuildResourceType) => {
+                        return previousOutput.substitutions.BRANCH_NAME;
+                    },
+                ],
+            },
+            {
+                name: "SHORT_SHA",
+                displayName: "Short SHA",
+                ops: [
+                    async (previousOutput: BuildResourceType) => {
+                        return previousOutput.substitutions.SHORT_SHA;
+                    },
+                ],
+            },
+            {
+                name: "COMMIT_SHA",
+                displayName: "Commit SHA",
+                ops: [
+                    async (previousOutput: BuildResourceType) => {
+                        return previousOutput.substitutions.COMMIT_SHA;
+                    },
+                ],
+            },
+            {
+                name: "REVISION_ID",
+                displayName: "Revision ID",
+                ops: [
+                    async (previousOutput: BuildResourceType) => {
+                        return previousOutput.substitutions.REVISION_ID;
+                    },
+                ],
+            },
+            {
+                name: "TRIGGER_NAME",
+                displayName: "Trigger Name",
+                ops: [
+                    async (previousOutput: BuildResourceType) => {
+                        return previousOutput.substitutions.TRIGGER_NAME;
+                    },
+                ],
+            },
+            {
+                name: "START_TIME",
+                displayName: "Start Time",
+                ops: [
+                    async (previousOutput: BuildResourceType) => {
+                        return new Date(previousOutput.startTime).toUTCString();
+                    },
+                    async (previousOutput: string) => {
+                        return previousOutput === "Invalid Date"
+                            ? new Date().toUTCString()
+                            : previousOutput;
+                    },
+                ],
+            },
+            {
+                name: "FINISH_TIME",
+                displayName: "Finish Time",
+                ops: [
+                    async (previousOutput: BuildResourceType) => {
+                        return new Date(
+                            previousOutput.finishTime
+                        ).toUTCString();
+                    },
+                    async (previousOutput: string) => {
+                        return previousOutput === "Invalid Date"
+                            ? "Unknown"
+                            : previousOutput;
+                    },
+                ],
+            },
+            {
+                name: "TIME_SPAN",
+                displayName: "Time Span",
+                ops: [
+                    async (previousOutput: BuildResourceType) => {
+                        const currentDate = new Date();
+                        return [
+                            new Date(previousOutput.startTime) || currentDate,
+                            new Date(previousOutput.startTime) || currentDate,
+                        ];
+                    },
+                    async (previousOutput: [Date, Date]) => {
+                        return formatDistance(...previousOutput, {
+                            includeSeconds: true,
+                        });
+                    },
+                ],
+            },
+            {
+                name: "STATUS",
+                displayName: "Status",
+                ops: [
+                    async (previousOutput: BuildResourceType) => {
+                        return previousOutput.status;
+                    },
+                ],
+            },
+            {
+                name: "LOG_URL",
+                displayName: "Log URL",
+                ops: [
+                    async (previousOutput: BuildResourceType) => {
+                        return previousOutput.logUrl;
+                    },
+                ],
+            },
+        ];
+    };
+
+    protected async processMessage(
+        buildResource: BuildResourceType
+    ): Promise<FieldValueType[]> {
+        const fieldsAndOps = this.getFieldsAndOps();
+        return await Promise.all(
+            fieldsAndOps.map(async ({ name, displayName, ops }) => {
+                const value = await ops.reduce(async (result: any, op) => {
+                    const resultValue = await result;
+                    return await op(resultValue);
+                }, Promise.resolve(buildResource));
+                return {
+                    name,
+                    displayName,
+                    value,
+                };
+            }, {})
         );
-        this.status = this.buildResource.status;
-        this.logUrl = this.buildResource.logUrl;
     }
 
     /**

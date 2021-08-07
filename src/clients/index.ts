@@ -1,11 +1,11 @@
 import { NextFunction, Request, Response } from "express";
 import { GoogleChatRoomClient } from "./GoogleChatRoom/GoogleChatRoomClient";
-import { MailClient } from "./Mail/MailClient";
+import { SMTPClient } from "./Mail/SMTPClient";
 import { Client } from "./Client";
 /**
  * Register your clients here
  */
-const clients: Client[] = [new GoogleChatRoomClient(), new MailClient()];
+const clients: Client[] = [new GoogleChatRoomClient(), new SMTPClient()];
 
 const getClientHandlers = () => {
     return clients.map((client) => {

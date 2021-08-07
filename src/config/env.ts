@@ -11,11 +11,21 @@ export const MESSAGE_SUBTITLE = process.env.MESSAGE_SUBTITLE;
 export const GOOGLE_CHAT_ROOM_WEBHOOK = process.env.GOOGLE_CHAT_ROOM_WEBHOOK;
 
 /**
+ * Sender and recipients email addresses and their names
+ */
+export const EMAIL_USERS = {
+    from: process.env.EMAIL_FROM,
+    to: process.env.EMAIL_TO,
+    cc: process.env.EMAIL_CC,
+    bcc: process.env.EMAIL_BCC,
+};
+
+/**
  * SMTP Credentials
  */
 export const SMTP_CREDENTIALS = {
     host: process.env.SMTP_HOST,
-    port: +(process.env.SMTP_PORT),
+    port: +process.env.SMTP_PORT,
     auth: {
         type: process.env.SMTP_AUTH_TYPE,
         user: process.env.SMTP_AUTH_USER,
