@@ -31,28 +31,33 @@ export class SMTPClient extends Client {
     }
 
     protected composeHtmlBody() {
-        return `<style type="text/css">
-        .tg  {border-collapse:collapse;border-spacing:0;}
-        .tg td{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
-          overflow:hidden;padding:10px 5px;word-break:normal;}
-        .tg th{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
-          font-weight:normal;overflow:hidden;padding:10px 5px;word-break:normal;}
-        .tg .tg-llyw{background-color:#c0c0c0;border-color:inherit;text-align:left;vertical-align:top}
-        .tg .tg-oyn9{background-color:#c0c0c0;border-color:#c0c0c0;text-align:center;vertical-align:top}
-        .tg .tg-y698{background-color:#efefef;border-color:inherit;text-align:left;vertical-align:top}
-        </style>
-        <table class="tg">
-        <tbody>
+        return `
+        <table style="width: 100%;
+        background-color: #ffffff;
+        border-collapse: collapse;
+        border-width: 2px;
+        border-color: #5f5f5d;
+        border-style: solid;
+        color: #000000;">
+          <tbody>
           ${this.fieldsValue.reduce((result, field) => {
               result += `
-            <tr>
-                <th class="tg-llyw">${field.displayName}</th>
-                <td class="tg-y698">${field.value}</td>
-            </tr>
-            `;
+          <tr>
+              <th style="border-width: 2px;
+              border-color: #5f5f5d;
+              border-style: solid;
+              padding: 3px;background-color: #d9cfa6;">${field.displayName}</th>
+              <td style="border-width: 2px;
+              border-color: #5f5f5d;
+              border-style: solid;
+              padding: 3px;">${field.value}</td>
+          </tr>
+          `;
               return result;
           }, ``)}
-        </tbody>
-        </table>`;
+          </tbody>
+        </table>
+        <!-- Codes by Quackit.com -->
+        `;
     }
 }
