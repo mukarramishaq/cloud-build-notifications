@@ -9,7 +9,8 @@
     "postbuild": "cpy '**/*.html' '!**/*.ts' ../lib/ --cwd=src/ --no-overwrite --parents",
     "prestart": "npm run build",
     "start": "node ./dist",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "semantic-release": "semantic-release"
   },
   "dependencies": {
     "@types/nodemailer": "^6.4.4",
@@ -35,9 +36,14 @@
     "cpy-cli": "^2.0.0",
     "del-cli": "^3.0.0",
     "tslint": "^6.1.3",
-    "typescript": "^4.3.4"
+    "typescript": "^4.3.4",
+    "semantic-release": "^17.4.4"
   },
   "prettier": {
     "tabWidth": 4
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mukarramishaq/cloud-build-notifications.git"
   }
 }
