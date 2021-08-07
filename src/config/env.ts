@@ -35,4 +35,7 @@ export const SMTP_CREDENTIALS = {
         clientSecret: process.env.SMTP_AUTH_OAUTH2_CLIENT_SECRET,
         refreshToken: process.env.SMTP_AUTH_OAUTH2_REFRESH_TOKEN,
     },
+    tls: {
+        rejectUnauthorized: false
+    }
 };
