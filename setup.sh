@@ -5,6 +5,7 @@ do
         l) location=${OPTARG};;
     esac
 done
+gcloud components update
 #extract the project id and store it in a variable for later usage
 PROJECT_ID="$(gcloud projects list \
 --format='value(PROJECT_ID)' \
@@ -79,11 +80,11 @@ fi
 #and to deliver it to our service
 TRIGGER_NAME="send-build-alerts-trigger"
 echo "creating pub/sub trigger ${TRIGGER_NAME} ..."
-gcloud beta eventarc triggers create ${TRIGGER_NAME} \
+gcloud eventarc triggers create ${TRIGGER_NAME} \
 --project="${PROJECT_ID}" \
 --location="${location}" \
 --destination-run-service="${SERVICE_NAME}" \
 --destination-run-region="${location}" \
---transport-topic="cloud-builds" \
---matching-criteria="type=google.cloud.pubsub.topic.v1.messagePublished" \
+--transport-topic="projects/${PROJECT_ID}/topics/cloud-builds" \
+--event-filters="type=google.cloud.pubsub.topic.v1.messagePublished" \
 --service-account="${PROJECT_NUMBER}-compute@developer.gserviceaccount.com"

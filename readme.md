@@ -56,6 +56,8 @@ This setup process is same for all type of recipient channels. The only differen
 
 Repeast all the steps in [How to Setup?](#how-to-setup). When you are on updating `.env` variables, uncomment `PROJECT_NAME` and `GOOGLE_CHAT_ROOM_WEBHOOK` and update their values to that of yours.
 
+Rest of the steps in [How to Setup?](#how-to-setup) will remain same.
+
 ### Setup for SMTP Email Notifications
 
 Repeast all the steps in [How to Setup?](#how-to-setup). When you are on updating `.env` variables, uncomment and update EMAIL and SMTP variables.
