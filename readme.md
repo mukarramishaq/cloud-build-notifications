@@ -88,4 +88,11 @@ And if your authentication type is `OAUTH2`, uncomment and update the values of 
 2. `SMTP_AUTH_OAUTH2_CLIENT_SECRET`
 3. `SMTP_AUTH_OAUTH2_REFRESH_TOKEN`
 
+Now to configure the sender and recipients name and emails, uncomment and update the following ENV variables:
+
+1. `EMAIL_FROM` i.e sender of this email notification
+2. `EMAIL_TO` a comma-separated list of recipients emails
+
+There are two more optional variables `EMAIL_CC` and `EMAIL_BCC` to configure a list of recipients as `CC` or `BCC`. Both these variables accept a comma-separated list of emails.
+
 Rest of the steps in [How to Setup?](#how-to-setup) will remain same.
